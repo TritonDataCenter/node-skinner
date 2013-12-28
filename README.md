@@ -60,6 +60,12 @@ assert.deepEqual(skinner.aggregate(datapoints, [ 'state', 'city' ]),
 
 ```
 
+The order that you specify breakdowns determines the order in which the values
+are output.  If you do `[ 'city', 'state' ]`, you'll get data points that look
+like `[ 'Springfield', 'MA', 153000 ]`.  If you do `[ 'state', 'city' ]`, you'll
+get `[ 'MA', 'Springfield', 153000 ]`.
+
+
 
 ## Bucketizing numbers
 
@@ -129,18 +135,11 @@ Besides the linear bucketizer, there's a log-linear bucketizer.  For details on
 what that does, see the DTrace llquantize() function.  To see how to use it,
 check the source for `makeLogLinearBucketizer`.
 
+There can be at most one bucketized field, and if present, it must be the last
+one in the list.  For example, you can't specify `[ 'util', 'host' ]`.
+
 
 ## Notes
-
-The order that you specify breakdowns determines the order in which the values
-are output.  If you do `[ 'city', 'state' ]`, you'll get data points that look
-like `[ 'Springfield', 'MA', 10 ]`.  If you do `[ 'state', 'city' ]`, you'll get
-`[ 'MA', 'Springfield', 10 ]`.
-
-It's not allowed to specify a field with a bucketizer *before* a field without
-one.  For example, you can't specify `[ 'util', 'host' ]`.  That could be made
-to work, but it's a little weird, since the values inside each histogram would
-end up being arrays instead of numbers.
 
 Error checking is not great at the moment.  (Most input errors result in
 assertion failures.)  Patches welcome.
