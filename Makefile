@@ -28,7 +28,7 @@ all:
 CLEAN_FILES += node_modules
 
 .PHONY: test
-test:
+test: all
 	node tests/tst.basic.js
 	@echo all tests passed
 
