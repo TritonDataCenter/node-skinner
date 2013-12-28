@@ -1,0 +1,11 @@
+{
+	"name": "skinner",
+	"description": "aggregate multi-dimensional data points",
+	"version": "0.0.1",
+	"license": "MIT",
+	"author": "Dave Pacheco <dap@joyent.com>",
+	"main": "lib/skinner.js",
+	"dependencies": {
+		"jsprim": "0.5.1"
+	}
+}
