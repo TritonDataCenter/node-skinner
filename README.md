@@ -139,6 +139,31 @@ There can be at most one bucketized field, and if present, it must be the last
 one in the list.  For example, you can't specify `[ 'util', 'host' ]`.
 
 
+## Streaming interface
+
+For large numbers of data points where you don't want to keep all data points in
+memory at once, you can use the object-mode streaming interface.  You write JSON
+objects to it, and it emits the final summary.  You can also fetch the summary
+so far at any time using the result() method.  For example, using the city/state
+datapoints above:
+
+```javascript
+bucketizers = {};
+
+stream = skinner.createAggregator({
+    'bucketizers': bucketizers,
+    'decomps': [ 'city' ]
+});
+
+datapoints.forEach(function (pt) { stream.write(pt); });
+stream.end();
+
+/* These two print the same thing. */
+console.log(stream.result());
+stream.on('data', function (result) { console.log(result); });
+```
+
+
 ## Notes
 
 Error checking is not great at the moment.  (Most input errors result in

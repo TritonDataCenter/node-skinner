@@ -1,10 +1,14 @@
 {
 	"name": "skinner",
 	"description": "aggregate multi-dimensional data points",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"license": "MIT",
 	"author": "Dave Pacheco <dap@joyent.com>",
 	"main": "lib/skinner.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/joyent/node-skinner.git"
+	},
 	"dependencies": {
 		"jsprim": "0.5.1"
 	}
