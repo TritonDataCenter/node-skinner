@@ -29,8 +29,10 @@ CLEAN_FILES += node_modules
 
 .PHONY: test
 test: all
-	node tests/tst.basic.js
-	node tests/tst.bucketize_p2.js
+	@node tests/tst.basic.js
+	@node tests/tst.bucketize_linear.js
+	@node tests/tst.bucketize_loglinear.js
+	@node tests/tst.bucketize_p2.js
 	@echo all tests passed
 
 include ./Makefile.targ

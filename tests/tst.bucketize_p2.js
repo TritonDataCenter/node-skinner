@@ -1,7 +1,10 @@
 var mod_assert = require('assert');
+var mod_path = require('path');
 var mod_skinner = require('../lib/skinner');
 
-var func = mod_skinner.p2Bucketizer;
+var bucketizer = mod_skinner.makeP2Bucketizer();
+var func = bucketizer.bucketize.bind(bucketizer);
+var expand = mod_skinner.ordinalToBounds.bind(null, bucketizer);
 var dist = [];
 var i;
 
@@ -9,44 +12,44 @@ var i;
  * Test obvious special cases near the bottom of the range.
  */
 func(dist, 1, 3);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 1, 1 ], 3 ]
 ]);
 
 func(dist, 0, 5);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 5 ],
     [ [ 1, 1 ], 3 ]
 ]);
 
 func(dist, 1, 7);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 5 ],
     [ [ 1, 1 ], 10 ]
 ]);
 
 func(dist, 0, 2);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 7 ],
     [ [ 1, 1 ], 10 ]
 ]);
 
 func(dist, 2, 9);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 7 ],
     [ [ 1, 1 ], 10 ],
     [ [ 2, 3 ], 9 ]
 ]);
 
 func(dist, 3, 3);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 7 ],
     [ [ 1, 1 ], 10 ],
     [ [ 2, 3 ], 12 ]
 ]);
 
 func(dist, 4, 1);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0, 0 ], 7 ],
     [ [ 1, 1 ], 10 ],
     [ [ 2, 3 ], 12 ],
@@ -58,18 +61,18 @@ mod_assert.deepEqual(dist, [
  */
 dist = [];
 func(dist, 9, 1);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 8, 15 ], 1 ]
 ]);
 
 func(dist, 3, 7);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 2, 3 ], 7 ],
     [ [ 8, 15 ], 1 ]
 ]);
 
 func(dist, 4, 2);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 2, 3 ], 7 ],
     [ [ 4, 7 ], 2 ],
     [ [ 8, 15 ], 1 ]
@@ -79,7 +82,7 @@ mod_assert.deepEqual(dist, [
 dist = [];
 for (i = 0; i < 32; i++)
 	func(dist, i, 1);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0,  0],  1 ],
     [ [ 1,  1],  1 ],
     [ [ 2,  3],  2 ],
@@ -91,7 +94,7 @@ mod_assert.deepEqual(dist, [
 /* Test *adding* someting to each of those. */
 for (i = 0; i < 32; i++)
 	func(dist, i, 2);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0,  0],  3 ],
     [ [ 1,  1],  3 ],
     [ [ 2,  3],  6 ],
@@ -104,7 +107,7 @@ mod_assert.deepEqual(dist, [
 dist = [];
 for (i = 31; i >= 0; i--)
 	func(dist, i, 3);
-mod_assert.deepEqual(dist, [
+mod_assert.deepEqual(expand(dist), [
     [ [ 0,  0],  3 ],
     [ [ 1,  1],  3 ],
     [ [ 2,  3],  6 ],
@@ -112,4 +115,4 @@ mod_assert.deepEqual(dist, [
     [ [ 8, 15], 24 ],
     [ [16, 31], 48 ]
 ]);
-console.log('test okay');
+console.log('test %s okay', mod_path.basename(process.argv[1]));

@@ -1,5 +1,5 @@
 var mod_assert = require('assert');
-
+var mod_path = require('path');
 var mod_skinner = require('../lib/skinner');
 var datapoints, bucketizers;
 
@@ -115,5 +115,5 @@ mod_assert.throws(function () {
     mod_skinner.aggregate(datapoints, [ 'util', 'cpu' ], bucketizers);
 }, test);
 
-console.log('test okay');
+console.log('test %s okay', mod_path.basename(process.argv[1]));
 /* END JSSTYLED */
