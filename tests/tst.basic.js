@@ -51,6 +51,23 @@ mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'state', 'city' ]),
       [ 'OR', 'Springfield', 60000 ],
       [ 'OR', 'Portland',    600000 ] ]);
 
+
+/*
+ * Test nested properties, which should use pluck().
+ */
+datapoints = [
+    { 'fields': { 'data': { 'city': 'Springfield', 'state': 'MA' } }, 'value': 153000 },
+    { 'fields': { 'data': { 'city': 'Boston',      'state': 'MA' } }, 'value': 636000 },
+    { 'fields': { 'data': { 'city': 'Worcestor',   'state': 'MA' } }, 'value': 183000 },
+    { 'fields': { 'data': { 'city': 'Fresno',      'state': 'CA' } }, 'value': 505000 },
+    { 'fields': { 'data': { 'city': 'Springfield', 'state': 'OR' } }, 'value':  60000 },
+    { 'fields': { 'data': { 'city': 'Portland',    'state': 'OR' } }, 'value': 600000 }
+];
+mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'data.state' ]),
+    [ [ 'MA', 972000 ],
+      [ 'CA', 505000 ],
+      [ 'OR', 660000 ] ]);
+
 /*
  * Test bucketizers.
  */
