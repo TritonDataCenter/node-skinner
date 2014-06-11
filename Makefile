@@ -33,6 +33,7 @@ test: all
 	@node tests/tst.bucketize_linear.js
 	@node tests/tst.bucketize_loglinear.js
 	@node tests/tst.bucketize_p2.js
+	@node tests/tst.nonnumeric.js
 	@echo all tests passed
 
 include ./Makefile.targ
