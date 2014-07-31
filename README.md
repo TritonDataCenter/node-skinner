@@ -106,8 +106,9 @@ Now, you can summarize CPU utilization across all systems with a single
 histogram:
 
 ```javascript
+var expand = mod_skinner.ordinalToBounds.bind(null, bucketizers.util);
 assert.deepEqual(
-    skinner.aggregate(datapoints, [ 'util' ], bucketizers),
+    expand(skinner.aggregate(datapoints, [ 'util' ], bucketizers)),
     [ [ [ [ 0, 9 ], 2 ],
         [ [ 10, 19 ], 1 ],
         [ [ 30, 39 ], 1 ],
@@ -120,23 +121,30 @@ These results tell us that we had 2 CPUs with utilization between 0 and 9
 (inclusive), 2 CPUs with utilization between 80 and 89, and 1 CPU each having
 utilizations 10-19, 30-39, and 90-99.
 
-You can break this out by host:
+If you leave out the "expand" bit, then you get bucket indexes rather than
+values.  For a linear bucketizer of step 10, bucket index 2 covers ranges 20 to
+30.  This format is generally more useful when you're shipping data around or
+doing other aggregations or calculations with it.
+
+You can break out these results by host (and using the un-expanded form):
 
 ```javascript
 assert.deepEqual(
     skinner.aggregate(datapoints, [ 'host', 'util' ], bucketizers),
-    [ [ 'host1', [ [ 10, 19 ], 1 ], [ [ 80, 89 ], 1 ] ],
-      [ 'host2', [ [ 30, 39 ], 1 ], [ [ 50, 59 ], 1 ] ],
-      [ 'host3', [ [  0,  9 ], 1 ], [ [ 80, 89 ], 1 ] ],
-      [ 'host4', [ [  0,  9 ], 1 ], [ [ 90, 99 ], 1 ] ] ]);
+    [ [ 'host1', 1, 1 ],
+      [ 'host1', 8, 1 ],
+      [ 'host2', 3, 1 ],
+      [ 'host2', 5, 1 ],
+      [ 'host3', 0, 1 ],
+      [ 'host3', 8, 1 ],
+      [ 'host4', 0, 1 ],
+      [ 'host4', 9, 1 ] ]);
+
 ```
 
 Besides the linear bucketizer, there's a log-linear bucketizer.  For details on
 what that does, see the DTrace llquantize() function.  To see how to use it,
 check the source for `makeLogLinearBucketizer`.
-
-There can be at most one bucketized field, and if present, it must be the last
-one in the list.  For example, you can't specify `[ 'util', 'host' ]`.
 
 
 ## Streaming interface

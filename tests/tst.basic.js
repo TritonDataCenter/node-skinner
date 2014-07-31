@@ -89,48 +89,41 @@ bucketizers = {
 /*
  * Summarize overall CPU utilization in a single histogram.
  */
+var expand = mod_skinner.ordinalToBounds.bind(null, bucketizers.util);
 mod_assert.deepEqual(
-    mod_skinner.aggregate(datapoints, [ 'util' ], bucketizers),
-    [ [ [ [ 0, 9 ], 2 ],
-        [ [ 10, 19 ], 1 ],
-        [ [ 30, 39 ], 1 ],
-        [ [ 50, 59 ], 1 ],
-        [ [ 80, 89 ], 2 ],
-        [ [ 90, 99 ], 1 ] ] ]);
+    expand(mod_skinner.aggregate(datapoints, [ 'util' ], bucketizers)),
+    [ [ [  0,  9 ], 2 ],
+      [ [ 10, 19 ], 1 ],
+      [ [ 30, 39 ], 1 ],
+      [ [ 50, 59 ], 1 ],
+      [ [ 80, 89 ], 2 ],
+      [ [ 90, 99 ], 1 ] ]);
 
 /*
  * Check CPU utilization histograms for each host.
  */
 mod_assert.deepEqual(
     mod_skinner.aggregate(datapoints, [ 'host', 'util' ], bucketizers),
-    [ [ 'host1', [ [ 10, 19 ], 1 ], [ [ 80, 89 ], 1 ] ],
-      [ 'host2', [ [ 30, 39 ], 1 ], [ [ 50, 59 ], 1 ] ],
-      [ 'host3', [ [  0,  9 ], 1 ], [ [ 80, 89 ], 1 ] ],
-      [ 'host4', [ [  0,  9 ], 1 ], [ [ 90, 99 ], 1 ] ] ]);
+    [ [ 'host1', 1, 1 ],
+      [ 'host1', 8, 1 ],
+      [ 'host2', 3, 1 ],
+      [ 'host2', 5, 1 ],
+      [ 'host3', 0, 1 ],
+      [ 'host3', 8, 1 ],
+      [ 'host4', 0, 1 ],
+      [ 'host4', 9, 1 ] ]);
 
 /*
  * Check CPU utilization histograms for each CPU name.
  */
 mod_assert.deepEqual(
     mod_skinner.aggregate(datapoints, [ 'cpu', 'util' ], bucketizers),
-    [ [ 'cpu0',
-        [ [ 30, 39 ], 1 ],
-        [ [ 80, 89 ], 2 ],
-        [ [ 90, 99 ], 1 ] ],
-      [ 'cpu1',
-        [ [  0,  9 ], 2 ],
-        [ [ 10, 19 ], 1 ],
-	[ [ 50, 59 ], 1 ] ] ]);
-
-/*
- * Check that it's illegal to specify bucketized fields before non-bucketized
- * fields.
- */
-var test = new RegExp('bucketized breakdowns must be last, but found ' +
-    'discrete breakdown "cpu" after bucketized breakdown "util"');
-mod_assert.throws(function () {
-    mod_skinner.aggregate(datapoints, [ 'util', 'cpu' ], bucketizers);
-}, test);
+    [ [ 'cpu0', 3, 1 ],
+      [ 'cpu0', 8, 2 ],
+      [ 'cpu0', 9, 1 ],
+      [ 'cpu1', 0, 2 ],
+      [ 'cpu1', 1, 1 ],
+      [ 'cpu1', 5, 1 ] ]);
 
 console.log('test %s okay', mod_path.basename(process.argv[1]));
 /* END JSSTYLED */

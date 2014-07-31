@@ -14,7 +14,6 @@ bucketizers = {
     'pop': mod_skinner.makeLinearBucketizer(100000)
 };
 stream = mod_skinner.createAggregator({
-    'ordinalBuckets': true,
     'decomps': [ 'pop' ],
     'bucketizers': bucketizers
 });
@@ -33,7 +32,7 @@ stream.on('invalid_object', function (obj, err, num) {
 datapoints.forEach(function (d) { stream.write(d); });
 stream.end();
 stream.on('data', function (results) {
-	mod_assert.deepEqual(results, [ [ [ 1, 1 ], [ 6, 1 ] ] ]);
+	mod_assert.deepEqual(results, [ [ 1, 1 ], [ 6, 1 ] ]);
 	gotdata = true;
 });
 
