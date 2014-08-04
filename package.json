@@ -10,7 +10,7 @@
 		"url": "https://github.com/joyent/node-skinner.git"
 	},
 	"dependencies": {
-		"jsprim": "0.5.1",
+		"jsprim": "0.6.0",
 		"verror": "1.4.0"
 	}
 }
