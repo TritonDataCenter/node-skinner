@@ -1,6 +1,11 @@
-var mod_assert = require('assert');
+/*
+ * Copyright (c) 2017, Joyent, Inc.
+ */
+
+var mod_assertplus = require('assert-plus');
 var mod_path = require('path');
 var mod_skinner = require('../lib/skinner');
+var mod_vasync = require('vasync');
 var datapoints, bucketizers;
 
 /*
@@ -23,16 +28,16 @@ datapoints = [
 ];
 
 /* Check the sum of all populations. */
-mod_assert.deepEqual(mod_skinner.aggregate(datapoints), [ 2137000 ]);
+mod_assertplus.deepEqual(mod_skinner.aggregate(datapoints), [ 2137000 ]);
 
 /* Check the sums of populations by state. */
-mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'state' ]),
+mod_assertplus.deepEqual(mod_skinner.aggregate(datapoints, [ 'state' ]),
     [ [ 'MA', 972000 ],
       [ 'CA', 505000 ],
       [ 'OR', 660000 ] ]);
 
 /* Check the sums of populations, broken out by city name (NOT state) */
-mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'city' ]),
+mod_assertplus.deepEqual(mod_skinner.aggregate(datapoints, [ 'city' ]),
     [ [ 'Springfield', 213000 ],
       [ 'Boston',      636000 ],
       [ 'Worcestor',   183000 ],
@@ -43,7 +48,7 @@ mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'city' ]),
  * Check the sums of populations, broken out by state *and* city
  * (same as the original dataset, in this case).
  */
-mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'state', 'city' ]),
+mod_assertplus.deepEqual(mod_skinner.aggregate(datapoints, [ 'state', 'city' ]),
     [ [ 'MA', 'Springfield', 153000 ],
       [ 'MA', 'Boston',      636000 ],
       [ 'MA', 'Worcestor',   183000 ],
@@ -63,7 +68,7 @@ datapoints = [
     { 'fields': { 'data': { 'city': 'Springfield', 'state': 'OR' } }, 'value':  60000 },
     { 'fields': { 'data': { 'city': 'Portland',    'state': 'OR' } }, 'value': 600000 }
 ];
-mod_assert.deepEqual(mod_skinner.aggregate(datapoints, [ 'data.state' ]),
+mod_assertplus.deepEqual(mod_skinner.aggregate(datapoints, [ 'data.state' ]),
     [ [ 'MA', 972000 ],
       [ 'CA', 505000 ],
       [ 'OR', 660000 ] ]);
@@ -90,7 +95,7 @@ bucketizers = {
  * Summarize overall CPU utilization in a single histogram.
  */
 var expand = mod_skinner.ordinalToBounds.bind(null, bucketizers.util);
-mod_assert.deepEqual(
+mod_assertplus.deepEqual(
     expand(mod_skinner.aggregate(datapoints, [ 'util' ], bucketizers)),
     [ [ [  0,  9 ], 2 ],
       [ [ 10, 19 ], 1 ],
@@ -102,7 +107,7 @@ mod_assert.deepEqual(
 /*
  * Check CPU utilization histograms for each host.
  */
-mod_assert.deepEqual(
+mod_assertplus.deepEqual(
     mod_skinner.aggregate(datapoints, [ 'host', 'util' ], bucketizers),
     [ [ 'host1', 1, 1 ],
       [ 'host1', 8, 1 ],
@@ -116,7 +121,7 @@ mod_assert.deepEqual(
 /*
  * Check CPU utilization histograms for each CPU name.
  */
-mod_assert.deepEqual(
+mod_assertplus.deepEqual(
     mod_skinner.aggregate(datapoints, [ 'cpu', 'util' ], bucketizers),
     [ [ 'cpu0', 3, 1 ],
       [ 'cpu0', 8, 2 ],
@@ -125,5 +130,68 @@ mod_assert.deepEqual(
       [ 'cpu1', 1, 1 ],
       [ 'cpu1', 5, 1 ] ]);
 
-console.log('test %s okay', mod_path.basename(process.argv[1]));
+/*
+ * Test streaming aggregators.
+ */
+datapoints = [
+	{ fields: { 'test': 'basic', 'aggregatedField': 1 }, value: 1},
+	{ fields: { 'test': 'advanced', 'anotherAggregatedField': 2 }, value: 2}
+];
+
+/*
+ * Streaming aggregator with results as a sum.
+ */
+function streamResultsAsSum(callback) {
+	var stream = mod_skinner.createAggregator({
+		decomps: ['test']
+	});
+	datapoints.forEach(function (pt) { stream.write(pt); });
+	stream.end();
+
+	stream.on('data', function (_) {
+		/*
+		 * We'll ignore the 'result' argument that this callback
+		 * provides since we're only using this callback as a way to
+		 * ensure all of the points have been aggregated.
+		 */
+		mod_assertplus.deepEqual(stream.result(),
+		    [['basic', 1], ['advanced', 2]]);
+		callback();
+	});
+}
+
+/*
+ * Streaming aggregator with results as datapoints.
+ */
+function streamResultsAsDatapoints(callback) {
+	var stream = mod_skinner.createAggregator({
+		decomps: ['test'],
+		resultsAsPoints: true
+	});
+	datapoints.forEach(function (pt) { stream.write(pt); });
+	stream.end();
+
+	stream.on('data', function (_) {
+		mod_assertplus.deepEqual(stream.result(), [
+		    { 'fields': { 'test': 'basic' }, 'value': 1},
+		    { 'fields': { 'test': 'advanced' }, 'value': 2}
+		]);
+		callback();
+	});
+}
+
+mod_vasync.parallel({
+    'funcs': [
+	streamResultsAsSum,
+	streamResultsAsDatapoints
+    ]
+}, function (err, result) {
+	var file = mod_path.basename(process.argv[1]);
+	if (err) {
+		console.error('%s: error running tests: %s', file, err.message);
+		process.exit(1);
+	}
+	console.log('test %s okay', file);
+});
+
 /* END JSSTYLED */

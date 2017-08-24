@@ -180,3 +180,15 @@ assertion failures.)  Patches welcome.
 You might also want to check out [krill](http://github.com/joyent/node-krill),
 which filters similar-looking data points.  Between krill and skinner, you can
 slice and dice data points in lots of different ways.
+
+## Test
+
+To test this library, run the 'test' target:
+
+```
+make test
+```
+
+## Contributing
+
+See the separate [contribution guidelines](CONTRIBUTING.md).
