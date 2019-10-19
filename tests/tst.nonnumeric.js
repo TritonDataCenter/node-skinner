@@ -1,4 +1,8 @@
-var mod_assert = require('assert');
+/*
+ * Copyright (c) 2017, Joyent, Inc.
+ */
+
+var mod_assertplus = require('assert');
 var mod_path = require('path');
 var mod_skinner = require('../lib/skinner');
 
@@ -18,26 +22,27 @@ stream = mod_skinner.createAggregator({
     'bucketizers': bucketizers
 });
 stream.on('invalid_object', function (obj, err, num) {
-	mod_assert.deepEqual(obj, {
+	mod_assertplus.deepEqual(obj, {
 	    'fields': {
 		'city': 'Worcestor',
 		'pop': 'bogus!'
 	    },
 	    'value': 1
 	});
-	mod_assert.equal(num, 2);
-	mod_assert.equal(err.message, 'value for field "pop" is not a number');
+	mod_assertplus.equal(num, 2);
+	mod_assertplus.equal(err.message,
+	    'value for field "pop" is not a number');
 	gotwarning = true;
 });
 datapoints.forEach(function (d) { stream.write(d); });
 stream.end();
 stream.on('data', function (results) {
-	mod_assert.deepEqual(results, [ [ 1, 1 ], [ 6, 1 ] ]);
+	mod_assertplus.deepEqual(results, [ [ 1, 1 ], [ 6, 1 ] ]);
 	gotdata = true;
 });
 
 stream.on('end', function () {
 	console.log('test %s okay', mod_path.basename(process.argv[1]));
-	mod_assert.ok(gotdata);
-	mod_assert.ok(gotwarning);
+	mod_assertplus.ok(gotdata);
+	mod_assertplus.ok(gotwarning);
 });

@@ -1,31 +1,37 @@
 #
-# Copyright (c) 2013, Joyent, Inc. All rights reserved.
-#
-# Makefile: top-level Makefile
-#
-# This Makefile contains only repo-specific logic and uses included makefiles
-# to supply common targets (javascriptlint, jsstyle, restdown, etc.), which are
-# used by other repos as well.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
-# Tools
+# Makefile.defs defines variables used as part of the build process.
 #
-NPM		 = npm
+include ./tools/mk/Makefile.defs
+
+NPM =			npm
+JSSTYLE =		jsstyle
+JSLINT =		jsl
 
 #
-# Files
+# Configuration used by Makefile.defs and Makefile.targ to generate
+# "check" and "docs" targets.
 #
-JS_FILES	:= $(shell find examples lib tests -name '*.js')
-JSON_FILES	 = package.json
-JSL_FILES_NODE   = $(JS_FILES)
-JSSTYLE_FILES	 = $(JS_FILES)
-JSL_CONF_NODE	 = jsl.node.conf
+JSON_FILES =		package.json
+JS_FILES :=		$(shell find examples lib tests -name '*.js')
+JSL_FILES_NODE =	$(JS_FILES)
+JSSTYLE_FILES =		$(JS_FILES)
+
+JSL_CONF_NODE =		tools/jsl.node.conf
+
+#
+# Makefile.node_modules.defs provides a common target for installing modules
+# with NPM from a dependency specification in a "package.json" file.  By
+# including this Makefile, we can depend on $(STAMP_NODE_MODULES) to drive "npm
+# install" correctly.
+#
+include ./tools/mk/Makefile.node_modules.defs
 
 .PHONY: all
-all:
-	$(NPM) install
-CLEAN_FILES += node_modules
+all: $(STAMP_NODE_MODULES)
 
 .PHONY: test
 test: all
@@ -36,4 +42,10 @@ test: all
 	@node tests/tst.nonnumeric.js
 	@echo all tests passed
 
-include ./Makefile.targ
+#
+# Target definitions.  This is where we include the target Makefiles for
+# the "defs" Makefiles we included above.
+#
+
+include ./tools/mk/Makefile.targ
+include ./tools/mk/Makefile.node_modules.targ

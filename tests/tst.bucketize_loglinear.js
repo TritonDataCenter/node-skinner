@@ -1,4 +1,8 @@
-var mod_assert = require('assert');
+/*
+ * Copyright (c) 2017, Joyent, Inc.
+ */
+
+var mod_assertplus = require('assert');
 var mod_path = require('path');
 var mod_skinner = require('../lib/skinner');
 
@@ -40,7 +44,7 @@ var expectedMins = [
 /* END JSSTYLED */
 
 for (i = 0; i < expectedMins.length; i++) {
-	mod_assert.equal(expectedMins[i], bucketizer.bucketMin(i),
+	mod_assertplus.equal(expectedMins[i], bucketizer.bucketMin(i),
 	    'bucket ' + i + ' minimum value');
 }
 
@@ -68,7 +72,7 @@ var expectedDist = [
 dist = [];
 for (i = 0; i < 1500; i++)
 	func(dist, i, 1);
-mod_assert.deepEqual(dist, expectedDist);
+mod_assertplus.deepEqual(dist, expectedDist);
 
 /*
  * Now do the same thing in reverse, to test creating buckets before others.
@@ -76,7 +80,7 @@ mod_assert.deepEqual(dist, expectedDist);
 dist = [];
 for (i = 1499; i >= 0; i--)
 	func(dist, i, 1);
-mod_assert.deepEqual(dist, expectedDist);
+mod_assertplus.deepEqual(dist, expectedDist);
 
 /*
  * Now try a few random ones.
@@ -86,7 +90,7 @@ func(dist, 927, 1);
 func(dist, 253, 1);
 func(dist, 1437, 1);
 func(dist, 1, 1);
-mod_assert.deepEqual(dist, [
+mod_assertplus.deepEqual(dist, [
     [  1, 1 ],
     [ 31, 1 ],
     [ 44, 1 ],
